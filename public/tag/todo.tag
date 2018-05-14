@@ -12,10 +12,9 @@
 
     <form onsubmit={ add }>
         <input ref="input" onkeyup={ edit }>
-        <button disabled={ !text }>Add #{ items.filter(whatShow).length + 1 }</button>
+        <button disabled={ !text }>Add</button>
 
-        <button type="button" disabled={ items.filter(onlyDone).length == 0 } onclick={ removeAllDone }>
-            X{ items.filter(onlyDone).length } </button>
+        <button type="button" disabled={ items.filter(onlyDone).length == 0 } onclick={ removeAllDone }>Del</button>
     </form>
 
     <!-- this script tag is optional -->
