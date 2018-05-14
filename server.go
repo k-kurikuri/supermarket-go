@@ -4,30 +4,11 @@ import (
 	"html/template"
 	"net/http"
 
-	"io"
-	"time"
-
+	"github.com/k-kurikuri/supermarket-go/app"
 	"github.com/labstack/echo"
-	"github.com/rs/xid"
 )
-
-type TemplateRender struct {
-	templates *template.Template
-}
-
-func (t *TemplateRender) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	if viewContext, isMap := data.(map[string]interface{}); isMap {
-		viewContext["reverse"] = c.Echo().Reverse
-	}
-
-	return t.templates.ExecuteTemplate(w, name, data)
-}
 
 var e *echo.Echo
-
-const (
-	userCookieName = "_uid"
-)
 
 func init() {
 	e = echo.New()
@@ -39,8 +20,8 @@ func init() {
 
 func main() {
 	e.GET("/", func(context echo.Context) error {
-		if _, err := getUidCookie(context); err != nil {
-			setUidCookie(context)
+		if _, err := app.GetUidCookie(context); err != nil {
+			app.SetUidCookie(context)
 		} else {
 			//todo: cookie.Value
 		}
@@ -53,31 +34,8 @@ func main() {
 
 // parse rendering files
 func setRenderer() {
-	renderer := &TemplateRender{
-		templates: template.Must(template.ParseGlob("views/*.html")),
+	renderer := &app.TemplateRender{
+		Templates: template.Must(template.ParseGlob("views/*.html")),
 	}
 	e.Renderer = renderer
-}
-
-// Cookieにuidを書き込む
-func setUidCookie(c echo.Context) {
-	cookie := new(http.Cookie)
-	cookie.Name = userCookieName
-	cookie.Value = createUuid()
-	cookie.Expires = time.Now().Add(2 * time.Hour)
-	c.SetCookie(cookie)
-}
-
-// uidキーのCookieを取得する
-func getUidCookie(c echo.Context) (*http.Cookie, error) {
-	cookie, err := c.Cookie(userCookieName)
-
-	return cookie, err
-}
-
-// uuidを生成する
-func createUuid() string {
-	uid := xid.New()
-
-	return uid.String()
 }
