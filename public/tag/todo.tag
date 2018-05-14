@@ -26,15 +26,15 @@
         }
 
         add(e) {
+            e.preventDefault()
             if (this.text) {
                 this.items.push({ title: this.text })
                 this.text = this.refs.input.value = ''
             }
-            e.preventDefault()
         }
 
         removeAllDone(e) {
-            this.items = this.items.filter(function(item) {
+            this.items = this.items.filter((item) => {
                 return !item.done
             })
         }
@@ -49,7 +49,7 @@
         }
 
         toggle(e) {
-            var item = e.item
+            const item = e.item
             item.done = !item.done
             return true
         }
