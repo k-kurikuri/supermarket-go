@@ -8,7 +8,17 @@ import (
 	"github.com/labstack/echo"
 )
 
-var e *echo.Echo
+const (
+	port = ":8000"
+)
+
+var (
+	e *echo.Echo
+)
+
+type Result struct {
+	Success bool `json:"success"`
+}
 
 func init() {
 	e = echo.New()
@@ -29,7 +39,12 @@ func main() {
 		return context.Render(http.StatusOK, "index.html", map[string]interface{}{})
 	})
 
-	e.Logger.Fatal(e.Start(":8000"))
+	e.POST("/add", func(context echo.Context) error {
+		// TODO: mongoにRequestパラメータ入れる
+		return context.JSON(http.StatusOK, &Result{Success: true})
+	})
+
+	e.Logger.Fatal(e.Start(port))
 }
 
 // parse rendering files

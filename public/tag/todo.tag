@@ -20,6 +20,7 @@
     <!-- this script tag is optional -->
     <script>
         this.items = opts.items
+        const self = this
 
         edit(e) {
             this.text = e.target.value
@@ -28,8 +29,17 @@
         add(e) {
             e.preventDefault()
             if (this.text) {
-                this.items.push({ title: this.text })
-                this.text = this.refs.input.value = ''
+                fetch('/add', {method: 'POST'})
+                        .then((res) => {
+                            return res.json()
+                        })
+                        .then((json) => {
+                          if (json.success) {
+                            self.items.push({ title: self.text })
+                            self.text = self.refs.input.value = ''
+                            self.update()
+                          }
+                        })
             }
         }
 
