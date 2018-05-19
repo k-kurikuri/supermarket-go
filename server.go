@@ -16,10 +16,12 @@ var (
 	e *echo.Echo
 )
 
+// Result Response
 type Result struct {
 	Success bool `json:"success"`
 }
 
+// init initialize
 func init() {
 	e = echo.New()
 
@@ -28,7 +30,15 @@ func init() {
 	setRenderer()
 }
 
+// main main function
 func main() {
+	setRouter()
+
+	e.Logger.Fatal(e.Start(port))
+}
+
+// setRouter URL routing
+func setRouter() {
 	e.GET("/", func(context echo.Context) error {
 		if _, err := app.GetUidCookie(context); err != nil {
 			app.SetUidCookie(context)
@@ -43,11 +53,9 @@ func main() {
 		// TODO: mongoにRequestパラメータ入れる
 		return context.JSON(http.StatusOK, &Result{Success: true})
 	})
-
-	e.Logger.Fatal(e.Start(port))
 }
 
-// parse rendering files
+// setRenderer parse rendering files
 func setRenderer() {
 	renderer := &app.TemplateRender{
 		Templates: template.Must(template.ParseGlob("views/*.html")),
