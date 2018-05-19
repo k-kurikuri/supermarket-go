@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"net/http"
 
+	"path/filepath"
+
 	"github.com/k-kurikuri/supermarket-go/app"
 	"github.com/labstack/echo"
 )
@@ -25,8 +27,8 @@ type Result struct {
 func init() {
 	e = echo.New()
 
-	e.Static("public/css", "public/css")
-	e.Static("public/tag", "public/tag")
+	e.Static("public/css", filepath.Join("public", "css"))
+	e.Static("public/tag", filepath.Join("public", "tag"))
 	setRenderer()
 }
 
