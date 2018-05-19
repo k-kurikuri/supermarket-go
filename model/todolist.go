@@ -8,6 +8,6 @@ type TodoList struct {
 
 // Todo Todo struct
 type Todo struct {
-	Name   string
-	Status int
+	Title string
+	Done  bool
 }
