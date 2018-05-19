@@ -9,7 +9,6 @@ import (
 	"github.com/k-kurikuri/supermarket-go/app"
 	"github.com/k-kurikuri/supermarket-go/model"
 	"github.com/labstack/echo"
-	"github.com/labstack/gommon/log"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -57,10 +56,7 @@ func setRouter() {
 		collect := session.DB(app.DBName).C(app.Table)
 
 		todoList := &model.TodoList{}
-		err = collect.Find(bson.M{"uid": cookie.Value}).One(&todoList)
-		if err != nil {
-			log.Error(err)
-		}
+		collect.Find(bson.M{"uid": cookie.Value}).One(&todoList)
 
 		return context.Render(http.StatusOK, "index.html", map[string]interface{}{
 			"TodoList": todoList,
