@@ -24,7 +24,13 @@
   <script>
     riot.mount('todo', {
       title: 'お買い物Todo',
-      items: [],
+      items: [
+      {{if .TodoList.Todo}}
+        {{range .TodoList.Todo}}
+          {title: '{{.Title}}', done: {{.Done}} },
+        {{end}}
+      {{end}}
+      ],
     })
   </script>
 
