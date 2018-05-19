@@ -11,15 +11,18 @@ const (
 	userCookieName = "_uid"
 )
 
-func SetUidCookie(c echo.Context) {
-	cookie := new(http.Cookie)
+// CreateUidCookie create cookie for uid
+func CreateUidCookie(c echo.Context) *http.Cookie {
+	cookie := &http.Cookie{}
 	cookie.Name = userCookieName
 	cookie.Value = CreateUuid()
 	cookie.Expires = time.Now().Add(2 * time.Hour)
 	c.SetCookie(cookie)
+
+	return cookie
 }
 
-// uidキーのCookieを取得する
+// GetUidCookie uidキーのCookieを取得する
 func GetUidCookie(c echo.Context) (*http.Cookie, error) {
 	cookie, err := c.Cookie(userCookieName)
 
