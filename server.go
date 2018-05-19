@@ -7,7 +7,10 @@ import (
 	"path/filepath"
 
 	"github.com/k-kurikuri/supermarket-go/app"
+	"github.com/k-kurikuri/supermarket-go/model"
 	"github.com/labstack/echo"
+	"github.com/labstack/gommon/log"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -42,13 +45,26 @@ func main() {
 // setRouter URL routing
 func setRouter() {
 	e.GET("/", func(context echo.Context) error {
-		if _, err := app.GetUidCookie(context); err != nil {
-			app.SetUidCookie(context)
-		} else {
-			//todo: cookie.Value
+		cookie, err := app.GetUidCookie(context)
+		if err != nil {
+			cookie = app.CreateUidCookie(context)
 		}
 
-		return context.Render(http.StatusOK, "index.html", map[string]interface{}{})
+		// Mongodb Session
+		session := app.GetSession()
+		defer session.Close()
+
+		collect := session.DB(app.DBName).C(app.Table)
+
+		todoList := &model.TodoList{}
+		err = collect.Find(bson.M{"uid": cookie.Value}).One(&todoList)
+		if err != nil {
+			log.Error(err)
+		}
+
+		return context.Render(http.StatusOK, "index.html", map[string]interface{}{
+			"TodoList": todoList,
+		})
 	})
 
 	e.POST("/add", func(context echo.Context) error {
