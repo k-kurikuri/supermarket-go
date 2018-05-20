@@ -29,7 +29,14 @@
         add(e) {
             e.preventDefault()
             if (this.text) {
-                fetch('/add', {method: 'POST'})
+                fetch('/add', {
+                    method: 'POST',
+                    headers: {
+                      'content-type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body:JSON.stringify({title: this.text,})
+                })
                         .then((res) => {
                             return res.json()
                         })
