@@ -68,6 +68,20 @@
         toggle(e) {
             const item = e.item
             item.done = !item.done
+
+            fetch('/update', {
+              method: 'PUT',
+              headers: {
+                'content-type': 'application/json'
+              },
+              credentials: 'include',
+              body:JSON.stringify({index: 0,})
+            }).then((res) => {
+              return res.json
+            }).then((json) => {
+              console.log(json)
+            })
+
             return true
         }
     </script>

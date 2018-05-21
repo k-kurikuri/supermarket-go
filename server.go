@@ -91,6 +91,10 @@ func setRouter() {
 
 		return c.JSON(http.StatusOK, &Result{Success: true})
 	})
+
+	e.PUT("/update", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]interface{}{"put": "OK"})
+	})
 }
 
 // setRenderer parse rendering files
