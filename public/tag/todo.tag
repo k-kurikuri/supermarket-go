@@ -69,8 +69,6 @@
               })
             }).then((res) => {
               return res.json
-            }).then((json) => {
-              console.log(json)
             })
             
             this.items = this.items.filter((item) => {
@@ -104,8 +102,6 @@
               })
             }).then((res) => {
               return res.json
-            }).then((json) => {
-              console.log(json)
             })
 
             return true
