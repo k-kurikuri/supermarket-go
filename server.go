@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"html/template"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 
@@ -93,7 +95,40 @@ func setRouter() {
 	})
 
 	e.PUT("/update", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{"put": "OK"})
+		s, err := ioutil.ReadAll(c.Request().Body)
+		if err != nil {
+			return err
+		}
+
+		var body map[string]interface{}
+		if err := json.Unmarshal(s, &body); err != nil {
+			return err
+		}
+
+		idx, _ := body["index"].(string)
+		title, _ := body["title"].(string)
+		done, _ := body["done"].(bool)
+		todo := &model.Todo{Title: title, Done: done}
+
+		cookie, err := app.GetUidCookie(c)
+		if err != nil {
+			log.Print(err)
+			return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
+		}
+
+		session := app.GetSession()
+		defer session.Close()
+
+		collect := session.DB(app.DBName).C(app.Table)
+		selector := bson.M{"uid": cookie.Value}
+		update := bson.M{"$set": bson.M{"todo." + idx: bson.M{"title": todo.Title, "done": todo.Done}}}
+		err = collect.Update(selector, update)
+		if err != nil {
+			log.Print(err)
+			return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
+		}
+
+		return c.JSON(http.StatusOK, map[string]interface{}{"update": "OK"})
 	})
 }
 

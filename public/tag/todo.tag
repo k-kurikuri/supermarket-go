@@ -75,7 +75,11 @@
                 'content-type': 'application/json'
               },
               credentials: 'include',
-              body:JSON.stringify({index: 0,})
+              body:JSON.stringify({
+                index: this.items.indexOf(item).toString(),
+                title: item.title,
+                done: item.done,
+              })
             }).then((res) => {
               return res.json
             }).then((json) => {
