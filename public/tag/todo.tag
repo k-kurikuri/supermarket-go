@@ -51,6 +51,28 @@
         }
 
         removeAllDone(e) {
+            const delIndexes = []
+            this.items.forEach((item, index) => {
+              if(item.done) {
+                delIndexes.push(index.toString())
+              }
+            })
+            
+            fetch('/delete', {
+              method: 'DELETE',
+              headers: {
+                'content-type': 'application/json'
+              },
+              credentials: 'include',
+              body:JSON.stringify({
+                indexes: delIndexes,
+              })
+            }).then((res) => {
+              return res.json
+            }).then((json) => {
+              console.log(json)
+            })
+            
             this.items = this.items.filter((item) => {
                 return !item.done
             })

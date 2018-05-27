@@ -130,6 +130,41 @@ func setRouter() {
 
 		return c.JSON(http.StatusOK, map[string]interface{}{"update": "OK"})
 	})
+
+	e.DELETE("/delete", func(c echo.Context) error {
+		indexes := &model.Indexes{}
+		if err := c.Bind(indexes); err != nil {
+			log.Print(err)
+			return c.JSON(http.StatusOK, &Result{Success: false})
+		}
+
+		cookie, err := app.GetUidCookie(c)
+		if err != nil {
+			log.Print(err)
+			return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
+		}
+
+		session := app.GetSession()
+		defer session.Close()
+
+		collect := session.DB(app.DBName).C(app.Table)
+		selector := bson.M{"uid": cookie.Value}
+
+		// 一度、配列内のデータをnilに設定し、その後nilをまとめてpullするハック Not Atomic..
+		for _, delIndex := range indexes.Indexes {
+			update := bson.M{"$set": bson.M{"todo." + delIndex: nil}}
+			err = collect.Update(selector, update)
+			if err != nil {
+				log.Print(err)
+				return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
+			}
+		}
+
+		update := bson.M{"$pull": bson.M{"todo": nil, "multi": true}}
+		err = collect.Update(selector, update)
+
+		return c.JSON(http.StatusOK, map[string]interface{}{"delete": "OK"})
+	})
 }
 
 // setRenderer parse rendering files
