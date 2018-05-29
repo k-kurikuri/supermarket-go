@@ -1,8 +1,6 @@
 package app
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -102,20 +100,11 @@ func (controller *Controller) DeleteTask(c echo.Context) error {
 }
 
 func (controller *Controller) PutTask(c echo.Context) error {
-	s, err := ioutil.ReadAll(c.Request().Body)
-	if err != nil {
-		return err
+	putReq := &model.PutRequest{}
+	if err := c.Bind(putReq); err != nil {
+		log.Print(err)
+		return c.JSON(http.StatusOK, &model.Result{Success: false})
 	}
-
-	var body map[string]interface{}
-	if err := json.Unmarshal(s, &body); err != nil {
-		return err
-	}
-
-	idx, _ := body["index"].(string)
-	title, _ := body["title"].(string)
-	done, _ := body["done"].(bool)
-	todo := &model.Todo{Title: title, Done: done}
 
 	cookie, err := GetUidCookie(c)
 	if err != nil {
@@ -128,7 +117,7 @@ func (controller *Controller) PutTask(c echo.Context) error {
 
 	collect := session.DB(DBName).C(Table)
 	selector := bson.M{"uid": cookie.Value}
-	update := bson.M{"$set": bson.M{"todo." + idx: bson.M{"title": todo.Title, "done": todo.Done}}}
+	update := bson.M{"$set": bson.M{"todo." + putReq.Index: bson.M{"title": putReq.Todo.Title, "done": putReq.Todo.Done}}}
 	err = collect.Update(selector, update)
 	if err != nil {
 		log.Print(err)

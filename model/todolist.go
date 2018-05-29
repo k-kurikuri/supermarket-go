@@ -8,8 +8,8 @@ type TodoList struct {
 
 // Todo Todo struct
 type Todo struct {
-	Title string
-	Done  bool
+	Title string `json:"title"`
+	Done  bool   `json:"done"`
 }
 
 // Indexes DELETE API Request struct
@@ -21,4 +21,9 @@ type Indexes struct {
 type Result struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
+}
+
+type PutRequest struct {
+	Index string `json:"index"`
+	Todo  Todo   `json:"todo"`
 }

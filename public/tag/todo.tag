@@ -97,8 +97,10 @@
               credentials: 'include',
               body:JSON.stringify({
                 index: this.items.indexOf(item).toString(),
-                title: item.title,
-                done: item.done,
+                todo: {
+                  title: item.title,
+                  done: item.done,
+                },
               })
             }).then((res) => {
               return res.json
