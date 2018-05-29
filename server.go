@@ -1,17 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"html/template"
-	"io/ioutil"
-	"net/http"
 	"path/filepath"
 
 	"github.com/k-kurikuri/supermarket-go/app"
-	"github.com/k-kurikuri/supermarket-go/model"
 	"github.com/labstack/echo"
-	"github.com/labstack/gommon/log"
-	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -21,12 +15,6 @@ const (
 var (
 	e *echo.Echo
 )
-
-// Result Response
-type Result struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
 
 // init initialize
 func init() {
@@ -39,132 +27,10 @@ func init() {
 
 // main main function
 func main() {
-	setRouter()
+	router := app.NewRouter()
+	router.Boot(e)
 
 	e.Logger.Fatal(e.Start(port))
-}
-
-// setRouter URL routing
-func setRouter() {
-	e.GET("/", func(c echo.Context) error {
-		cookie, err := app.GetUidCookie(c)
-		if err != nil {
-			cookie = app.CreateUidCookie(c)
-		}
-
-		// Mongodb Session
-		session := app.GetSession()
-		defer session.Close()
-
-		collect := session.DB(app.DBName).C(app.Table)
-
-		todoList := &model.TodoList{}
-		collect.Find(bson.M{"uid": cookie.Value}).One(&todoList)
-
-		return c.Render(http.StatusOK, "index.html", map[string]interface{}{
-			"TodoList": todoList,
-		})
-	})
-
-	e.POST("/add", func(c echo.Context) error {
-		todo := &model.Todo{Done: false}
-		if err := c.Bind(todo); err != nil {
-			log.Print(err)
-			return c.JSON(http.StatusOK, &Result{Success: false})
-		}
-
-		cookie, err := app.GetUidCookie(c)
-		if err != nil {
-			log.Print(err)
-			return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
-		}
-
-		session := app.GetSession()
-		defer session.Close()
-
-		collect := session.DB(app.DBName).C(app.Table)
-		selector := bson.M{"uid": cookie.Value}
-		update := bson.M{"$push": bson.M{"todo": todo}}
-		_, err = collect.Upsert(selector, update)
-		if err != nil {
-			log.Print(err)
-			return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
-		}
-
-		return c.JSON(http.StatusOK, &Result{Success: true})
-	})
-
-	e.PUT("/update", func(c echo.Context) error {
-		s, err := ioutil.ReadAll(c.Request().Body)
-		if err != nil {
-			return err
-		}
-
-		var body map[string]interface{}
-		if err := json.Unmarshal(s, &body); err != nil {
-			return err
-		}
-
-		idx, _ := body["index"].(string)
-		title, _ := body["title"].(string)
-		done, _ := body["done"].(bool)
-		todo := &model.Todo{Title: title, Done: done}
-
-		cookie, err := app.GetUidCookie(c)
-		if err != nil {
-			log.Print(err)
-			return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
-		}
-
-		session := app.GetSession()
-		defer session.Close()
-
-		collect := session.DB(app.DBName).C(app.Table)
-		selector := bson.M{"uid": cookie.Value}
-		update := bson.M{"$set": bson.M{"todo." + idx: bson.M{"title": todo.Title, "done": todo.Done}}}
-		err = collect.Update(selector, update)
-		if err != nil {
-			log.Print(err)
-			return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
-		}
-
-		return c.JSON(http.StatusOK, map[string]interface{}{"update": "OK"})
-	})
-
-	e.DELETE("/delete", func(c echo.Context) error {
-		indexes := &model.Indexes{}
-		if err := c.Bind(indexes); err != nil {
-			log.Print(err)
-			return c.JSON(http.StatusOK, &Result{Success: false})
-		}
-
-		cookie, err := app.GetUidCookie(c)
-		if err != nil {
-			log.Print(err)
-			return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
-		}
-
-		session := app.GetSession()
-		defer session.Close()
-
-		collect := session.DB(app.DBName).C(app.Table)
-		selector := bson.M{"uid": cookie.Value}
-
-		// 一度、配列内のデータをnilに設定し、その後nilをまとめてpullするハック Not Atomic..
-		for _, delIndex := range indexes.Indexes {
-			update := bson.M{"$set": bson.M{"todo." + delIndex: nil}}
-			err = collect.Update(selector, update)
-			if err != nil {
-				log.Print(err)
-				return c.JSON(http.StatusOK, &Result{Success: false, Message: err.Error()})
-			}
-		}
-
-		update := bson.M{"$pull": bson.M{"todo": nil, "multi": true}}
-		err = collect.Update(selector, update)
-
-		return c.JSON(http.StatusOK, map[string]interface{}{"delete": "OK"})
-	})
 }
 
 // setRenderer parse rendering files

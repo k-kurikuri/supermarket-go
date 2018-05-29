@@ -16,3 +16,9 @@ type Todo struct {
 type Indexes struct {
 	Indexes []string
 }
+
+// Result Response
+type Result struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
