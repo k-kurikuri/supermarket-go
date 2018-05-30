@@ -29,24 +29,14 @@
         add(e) {
             e.preventDefault()
             if (this.text) {
-                fetch('/add', {
-                    method: 'POST',
-                    headers: {
-                      'content-type': 'application/json'
-                    },
-                    credentials: 'include',
-                    body:JSON.stringify({title: this.text,})
-                })
-                        .then((res) => {
-                            return res.json()
-                        })
-                        .then((json) => {
-                          if (json.success) {
-                            self.items.push({ title: self.text })
-                            self.text = self.refs.input.value = ''
-                            self.update()
-                          }
-                        })
+                this.request('/add', 'POST', {title: this.text})
+                  .then((json) => {
+                    if (json.success) {
+                      self.items.push({ title: self.text })
+                      self.text = self.refs.input.value = ''
+                      self.update()
+                    }
+                  })
             }
         }
 
@@ -57,20 +47,9 @@
                 delIndexes.push(index.toString())
               }
             })
-            
-            fetch('/delete', {
-              method: 'DELETE',
-              headers: {
-                'content-type': 'application/json'
-              },
-              credentials: 'include',
-              body:JSON.stringify({
-                indexes: delIndexes,
-              })
-            }).then((res) => {
-              return res.json
-            })
-            
+
+            this.request('/delete', 'DELETE', {indexes: delIndexes})
+
             this.items = this.items.filter((item) => {
                 return !item.done
             })
@@ -89,24 +68,29 @@
             const item = e.item
             item.done = !item.done
 
-            fetch('/update', {
-              method: 'PUT',
-              headers: {
-                'content-type': 'application/json'
-              },
-              credentials: 'include',
-              body:JSON.stringify({
+            const req = {
                 index: this.items.indexOf(item).toString(),
                 todo: {
                   title: item.title,
                   done: item.done,
                 },
-              })
-            }).then((res) => {
-              return res.json
-            })
+            }
+            this.request('/update', 'PUT', req)
 
             return true
+        }
+
+        request(uri, method, body) {
+            return fetch(uri, {
+              method: method,
+              headers: {
+                'content-type': 'application/json'
+              },
+              credentials: 'include',
+              body:JSON.stringify(body)
+            }).then((res) => {
+              return res.json()
+            })
         }
     </script>
 
