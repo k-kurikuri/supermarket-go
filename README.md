@@ -8,4 +8,4 @@ SuperMarket Todo WebApplication
 * Golang
 * echo
 * Riot.js
-* M
+* MongoDB
