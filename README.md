@@ -11,4 +11,4 @@ SuperMarket Todo WebApplication
 * MongoDB
 
 ## Demo
-![demo](https://github.com/k-kurikuri/supermarket-go/media/demo.gif)
+![demo](https://github.com/k-kurikuri/supermarket-go/blob/media/demo.gif)
