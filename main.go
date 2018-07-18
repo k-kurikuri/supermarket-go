@@ -36,7 +36,29 @@ func main() {
 // setRenderer parse rendering files
 func setRenderer() {
 	renderer := &app.TemplateRender{
-		Templates: template.Must(template.ParseGlob("views/*.html")),
+		Templates: template.Must(parseAssets("views/index.html")),
 	}
 	e.Renderer = renderer
+}
+
+func parseAssets(filenames ...string) (*template.Template, error) {
+	var ns = template.New("complex")
+
+	for _, filename := range filenames {
+
+		src, err := Asset(filename)
+		if err != nil {
+			return nil, err
+		}
+
+		s := string(src)
+		name := filepath.Base(filename)
+
+		_, err = ns.New(name).Parse(s)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return ns, nil
 }
